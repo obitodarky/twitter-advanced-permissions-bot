@@ -13,25 +13,23 @@ export const connectors = [metaMask()];
 const queryClient = new QueryClient();
 
 export const wagmiConfig = createConfig({
-    chains: [sepolia],
-    connectors,
-    multiInjectedProviderDiscovery: false,
-    ssr: true,
-    transports: {
-        [sepolia.id]: http(process.env.NEXT_PUBLIC_RPC_URL),
-    },
+  chains: [sepolia],
+  connectors,
+  ssr: true,
+  multiInjectedProviderDiscovery: false,
+  transports: {
+    [sepolia.id]: http(process.env.NEXT_PUBLIC_RPC_URL),
+  },
 });
 
 export function AppProvider({ children }: { children: ReactNode }) {
-    return (
-        <QueryClientProvider client={queryClient}>
-            <WagmiProvider config={wagmiConfig}>
-                <SessionAccountProvider>
-                    <PermissionProvider>
-                        {children}
-                    </PermissionProvider>
-                </SessionAccountProvider>
-            </WagmiProvider>
-        </QueryClientProvider>
-    );
+  return (
+    <QueryClientProvider client={queryClient}>
+      <WagmiProvider config={wagmiConfig}>
+        <SessionAccountProvider>
+          <PermissionProvider>{children}</PermissionProvider>
+        </SessionAccountProvider>
+      </WagmiProvider>
+    </QueryClientProvider>
+  );
 }
