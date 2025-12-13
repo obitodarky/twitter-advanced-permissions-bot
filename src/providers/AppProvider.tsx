@@ -7,7 +7,6 @@ import { ReactNode } from "react";
 import { metaMask } from "wagmi/connectors";
 import { PermissionProvider } from "@/providers/PermissionProvider";
 import { SessionAccountProvider } from "@/providers/SessionAccountProvider";
-
 export const connectors = [metaMask()];
 
 const queryClient = new QueryClient();
