@@ -4,6 +4,7 @@ import React, { useState, useCallback } from "react";
 import { Canvas } from "@react-three/fiber";
 import SlotMachineScene from "./SlotMachineScene";
 import Button from "./Button";
+import { Lights } from "./Lights";
 
 interface SlotMachineProps {
   className?: string;
@@ -46,11 +47,7 @@ const SlotMachine: React.FC<SlotMachineProps> = ({ className }) => {
           camera={{ position: [0, 3, 6], fov: 50 }}
           className="bg-zinc-50"
         >
-          {/* Lighting setup */}
-          <ambientLight intensity={0.5} />
-          <pointLight position={[10, 10, 10]} intensity={1} />
-          <pointLight position={[-10, 10, -10]} intensity={0.5} />
-          <directionalLight position={[0, 5, 5]} intensity={0.8} />
+          <Lights />
 
           {/* Slot Machine 3D Scene */}
           <SlotMachineScene

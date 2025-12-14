@@ -19,7 +19,7 @@ const SlotCylinder: React.FC<SlotCylinderProps> = ({
   isSpinning,
   stopTime,
   onStop,
-  segments = 12,
+  segments = 64,
 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const rotationSpeedRef = useRef(0);
