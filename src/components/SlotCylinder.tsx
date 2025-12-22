@@ -8,63 +8,91 @@ interface SlotCylinderProps {
   position: [number, number, number];
   textures?: THREE.Texture[];
   isSpinning: boolean;
-  stopTime: number; // Time in seconds when this cylinder should stop
+  stopSegment?: number; // Target segment to stop at (undefined means not set yet)
   onStop: () => void;
   segments?: number; // Number of segments/images around the cylinder
+}
+
+interface CylinderGroup extends THREE.Mesh {
+  reelSegment?: number;
+  reelSpinUntil?: number;
+  targetRotationY?: number;
+  isSnapping?: boolean;
 }
 
 const SlotCylinder: React.FC<SlotCylinderProps> = ({
   position,
   textures,
   isSpinning,
-  stopTime,
+  stopSegment,
   onStop,
-  segments = 64,
+  segments = 8,
 }) => {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const rotationSpeedRef = useRef(0);
-  const startTimeRef = useRef<number | null>(null);
-  const [hasStopped, setHasStopped] = useState(false);
+  const meshRef = useRef<CylinderGroup>(null);
+
+  // Calculate the rotation per segment (WHEEL_SEGMENT equivalent)
+  // For a cylinder, each segment is 2π / segments radians
+  const WHEEL_SEGMENT = (2 * Math.PI) / segments;
 
   // Reset when spinning starts
   useEffect(() => {
-    if (isSpinning) {
-      startTimeRef.current = Date.now();
-      rotationSpeedRef.current = 0.2; // Initial rotation speed
-      setHasStopped(false);
+    if (isSpinning && meshRef.current) {
+      // Reset rotation and state
+      meshRef.current.rotation.y = 0;
+      meshRef.current.reelSegment = 0;
+      meshRef.current.isSnapping = false;
+
+      // Set target segment if provided
+      if (stopSegment !== undefined) {
+        meshRef.current.reelSpinUntil = stopSegment;
+        meshRef.current.targetRotationY = stopSegment * WHEEL_SEGMENT;
+      }
     }
-  }, [isSpinning]);
+  }, [isSpinning, stopSegment, WHEEL_SEGMENT]);
 
-  useFrame((state, delta) => {
-    if (!meshRef.current) return;
+  useFrame(() => {
+    const reel = meshRef.current;
+    if (!reel || !isSpinning) return;
 
-    if (isSpinning && !hasStopped && startTimeRef.current !== null) {
-      const elapsed = (Date.now() - startTimeRef.current) / 1000; // Convert to seconds
+    // Only animate if we have a target set
+    if (reel.reelSpinUntil === undefined || reel.targetRotationY === undefined)
+      return;
 
-      if (elapsed < stopTime) {
-        // Accelerate then decelerate
-        const progress = elapsed / stopTime;
+    const rotationSpeed = 0.1;
 
-        // Smooth deceleration curve (ease-out)
-        const decelerationFactor = 1 - Math.pow(progress, 2);
-        rotationSpeedRef.current = 0.2 * decelerationFactor;
-
-        // Ensure minimum speed for smooth animation
-        if (rotationSpeedRef.current < 0.01) {
-          rotationSpeedRef.current = 0.01;
-        }
+    if (!reel.isSnapping) {
+      // Continuous spinning phase - rotate until we're close to target
+      if (reel.rotation.y < reel.targetRotationY - rotationSpeed) {
+        reel.rotation.y += rotationSpeed;
+        reel.reelSegment = Math.floor(reel.rotation.y / WHEEL_SEGMENT);
       } else {
-        // Stop the cylinder
-        rotationSpeedRef.current = 0;
-        setHasStopped(true);
+        // Switch to snapping phase
+        reel.isSnapping = true;
+      }
+    }
+    if (reel.isSnapping) {
+      // Snapping phase - smoothly lerp to exact target position
+      reel.rotation.y = THREE.MathUtils.lerp(
+        reel.rotation.y,
+        reel.targetRotationY,
+        0.2
+      );
+
+      // Check if we've reached the target
+      if (Math.abs(reel.rotation.y - reel.targetRotationY) < 0.01) {
+        reel.rotation.y = reel.targetRotationY;
+        reel.reelSegment = reel.reelSpinUntil;
+
+        // Clear spinning state
+        reel.reelSpinUntil = undefined;
+        reel.isSnapping = false;
+        reel.targetRotationY = undefined;
+
+        // Notify parent that this cylinder has stopped
         onStop();
       }
-
-      // Rotate around X axis (horizontal cylinder's long axis) using delta for frame-rate independent animation
-      meshRef.current.rotation.x += rotationSpeedRef.current * delta * 10;
     }
   });
-
   // Create a canvas texture with colored segments as fallback
   const createSegmentTexture = React.useMemo(() => {
     const canvas = document.createElement("canvas");
@@ -92,7 +120,7 @@ const SlotCylinder: React.FC<SlotCylinderProps> = ({
       ctx.fillRect(i * segmentWidth, 0, segmentWidth, canvas.height);
 
       // Add border between segments
-      ctx.strokeStyle = "#000";
+      // ctx.strokeStyle = "#000";
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(i * segmentWidth, 0);
@@ -122,9 +150,13 @@ const SlotCylinder: React.FC<SlotCylinderProps> = ({
     }
   }, [textures, createSegmentTexture]);
 
-  // Create geometry with proper UV mapping
+  // Create geometry with enough radial segments to appear smooth,
+  // while still using `segments` for the logical reel divisions.
   const geometry = React.useMemo(() => {
-    return new THREE.CylinderGeometry(1, 1, 2, segments, 1, true);
+    const radialSegments = segments * 8; // increase this multiplier for even smoother edges
+    const geo = new THREE.CylinderGeometry(1, 1, 2, radialSegments, 1, true);
+    geo.computeVertexNormals();
+    return geo;
   }, [segments]);
 
   return (
@@ -133,7 +165,7 @@ const SlotCylinder: React.FC<SlotCylinderProps> = ({
       position={position}
       geometry={geometry}
       material={material}
-      rotation={[0, 0, Math.PI / 2]} // Rotate 90 degrees around Z axis to make cylinder horizontal
+      rotation={[Math.PI / 2, 0, 0]} // Rotate 90 degrees around Z axis to make cylinder horizontal
     />
   );
 };
