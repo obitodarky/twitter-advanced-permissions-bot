@@ -10,7 +10,7 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const baseClasses =
-    'w-fit px-10 py-3 font-semibold text-white bg-gradient-to-br from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 rounded-lg cursor-pointer transition-all duration-200 ease-in-out shadow-md min-h-12 inline-flex items-center justify-center border-none disabled:opacity-50 disabled:cursor-not-allowed';
+    "cursor-pointer rounded-lg border-none bg-[linear-gradient(45deg,#999_5%,#fff_10%,#ccc_30%,#ddd_50%,#ccc_70%,#fff_80%,#999_95%)] px-4 py-1.5 text-base font-medium shadow-md outline-none transition-all duration-700 ease-in-out hover:-translate-y-1 w-fit px-10 py-3 font-semibold bg-gray-900 hover:bg-gray-800 rounded-[2rem] transition-all duration-200 ease-in-out min-h-12 inline-flex items-center justify-center border-2 border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed text-black";
 
   return (
     <button className={`${baseClasses} ${className}`} {...props}>

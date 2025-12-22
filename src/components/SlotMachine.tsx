@@ -3,7 +3,6 @@
 import React, { useState, useCallback } from "react";
 import { Canvas } from "@react-three/fiber";
 import SlotMachineScene from "./SlotMachineScene";
-import Button from "./Button";
 import { Lights } from "./Lights";
 import Hall from "./Hall";
 import { Preload } from "@react-three/drei";
@@ -69,15 +68,11 @@ const SlotMachine: React.FC<SlotMachineProps> = ({ className }) => {
             isSpinning={isSpinning}
             stopSegments={stopSegments}
             onCylinderStop={handleCylinderStop}
+            onSpin={handleSpin}
           />
           <Preload all />
         </Canvas>
       </div>
-
-      {/* Spin Button */}
-      <Button onClick={handleSpin} disabled={isSpinning} className="mt-4">
-        {isSpinning ? "Spinning..." : "Spin"}
-      </Button>
     </div>
   );
 };

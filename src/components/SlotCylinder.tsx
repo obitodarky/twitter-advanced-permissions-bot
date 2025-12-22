@@ -107,14 +107,14 @@ const SlotCylinder: React.FC<SlotCylinderProps> = ({
     if (!ctx) return null;
 
     const colors = [
-      "#FF6B6B",
-      "#4ECDC4",
-      "#45B7D1",
-      "#FFA07A",
-      "#98D8C8",
-      "#F7DC6F",
-      "#BB8FCE",
-      "#85C1E2",
+      "#171823",
+      "#171823",
+      "#171823",
+      "#171823",
+      "#171823",
+      "#171823",
+      "#171823",
+      "#171823",
     ];
 
     const segmentWidth = canvas.width / segments;
@@ -150,7 +150,7 @@ const SlotCylinder: React.FC<SlotCylinderProps> = ({
     } else if (createSegmentTexture) {
       return new THREE.MeshStandardMaterial({ map: createSegmentTexture });
     } else {
-      return new THREE.MeshStandardMaterial({ color: "#FF6B6B" });
+      return new THREE.MeshStandardMaterial({ color: "#171823" });
     }
   }, [textures, createSegmentTexture]);
 

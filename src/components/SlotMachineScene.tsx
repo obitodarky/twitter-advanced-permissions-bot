@@ -1,19 +1,59 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { Html } from "@react-three/drei";
 import SlotCylinder from "./SlotCylinder";
+import Button from "./Button";
+import Confetti from "react-confetti";
 
 interface SlotMachineSceneProps {
   isSpinning: boolean;
   stopSegments: [number, number, number];
   onCylinderStop: () => void;
+  onSpin: () => void;
 }
 
 const SlotMachineScene: React.FC<SlotMachineSceneProps> = ({
   isSpinning,
   stopSegments,
   onCylinderStop,
+  onSpin,
 }) => {
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+  const [wasSpinning, setWasSpinning] = useState(false);
+
+  // Track when spinning stops to show confetti
+  useEffect(() => {
+    if (isSpinning) {
+      setWasSpinning(true);
+      setShowConfetti(false);
+    } else if (wasSpinning && !isSpinning) {
+      // Spinning just stopped
+      setShowConfetti(true);
+      setWasSpinning(false);
+      // Hide confetti after 5 seconds
+      const timer = setTimeout(() => {
+        setShowConfetti(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [isSpinning, wasSpinning]);
+
+  // Handle window resize for confetti
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <>
       {/* Glass cover cylinder that encloses all 3 reels */}
@@ -68,6 +108,36 @@ const SlotMachineScene: React.FC<SlotMachineSceneProps> = ({
         radius={1.5}
         height={1.8}
       />
+
+      {/* Top navigation bar with gradient overlay */}
+      <Html fullscreen>
+        <div className="w-full h-full pointer-events-none">
+          {/* Top nav bar with grey to transparent gradient */}
+          <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-gray-950 to-transparent flex items-center justify-center px-6 pointer-events-auto">
+            <img
+              src="/ape-spin-logo.svg"
+              alt="APE SPIN Logo"
+              className="h-12 w-auto translate-y-4 glow-animation"
+            />
+          </div>
+          {showConfetti && (
+            <Confetti
+              width={windowSize.width || window.innerWidth}
+              height={windowSize.height || window.innerHeight}
+            />
+          )}
+          {/* Spin button overlaid inside the canvas */}
+          <div className="w-full h-full flex items-end justify-center pb-16 text-black">
+            <Button
+              onClick={onSpin}
+              disabled={isSpinning}
+              className="pointer-events-auto text-black"
+            >
+              {isSpinning ? "Spinning..." : "Spin"}
+            </Button>
+          </div>
+        </div>
+      </Html>
     </>
   );
 };
