@@ -11,6 +11,8 @@ interface SlotCylinderProps {
   stopSegment?: number; // Target segment to stop at (undefined means not set yet)
   onStop: () => void;
   segments?: number; // Number of segments/images around the cylinder
+  radius?: number;
+  height?: number;
 }
 
 interface CylinderGroup extends THREE.Mesh {
@@ -27,6 +29,8 @@ const SlotCylinder: React.FC<SlotCylinderProps> = ({
   stopSegment,
   onStop,
   segments = 8,
+  radius,
+  height,
 }) => {
   const meshRef = useRef<CylinderGroup>(null);
 
@@ -154,10 +158,14 @@ const SlotCylinder: React.FC<SlotCylinderProps> = ({
   // while still using `segments` for the logical reel divisions.
   const geometry = React.useMemo(() => {
     const radialSegments = segments * 8; // increase this multiplier for even smoother edges
-    const geo = new THREE.CylinderGeometry(1, 1, 2, radialSegments, 1, true);
+    // Ensure radius is always 2x the height.
+    // Use the provided `height` if given, otherwise fall back to 1.
+    const h = height ?? 1;
+    const r = radius ?? 2 * h;
+    const geo = new THREE.CylinderGeometry(r, r, h, radialSegments, 1, true);
     geo.computeVertexNormals();
     return geo;
-  }, [segments]);
+  }, [segments, radius, height]);
 
   return (
     <mesh
