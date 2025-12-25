@@ -141,16 +141,32 @@ const SlotCylinder: React.FC<SlotCylinderProps> = ({
   }, [segments]);
 
   // Use provided textures or fallback to canvas texture
+  // Enhanced material for better light reflection
   const material = React.useMemo(() => {
+    const baseMaterialProps = {
+      roughness: 0.3, // Lower roughness for more reflection
+      metalness: 0.2, // Slight metalness for better light interaction
+      envMapIntensity: 1.5, // Enhanced environment map for reflections
+    };
+
     if (textures && textures.length > 0) {
       const texture = textures[0];
       texture.wrapS = THREE.RepeatWrapping;
       texture.wrapT = THREE.RepeatWrapping;
-      return new THREE.MeshStandardMaterial({ map: texture });
+      return new THREE.MeshStandardMaterial({
+        map: texture,
+        ...baseMaterialProps,
+      });
     } else if (createSegmentTexture) {
-      return new THREE.MeshStandardMaterial({ map: createSegmentTexture });
+      return new THREE.MeshStandardMaterial({
+        map: createSegmentTexture,
+        ...baseMaterialProps,
+      });
     } else {
-      return new THREE.MeshStandardMaterial({ color: "#171823" });
+      return new THREE.MeshStandardMaterial({
+        color: "#171823",
+        ...baseMaterialProps,
+      });
     }
   }, [textures, createSegmentTexture]);
 
