@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Gemunu_Libre } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "@/providers/AppProvider";
 
@@ -11,6 +11,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const gemunuLibre = Gemunu_Libre({
+  variable: "--font-gemunu-libre",
+  subsets: ["latin"],
+  weight: ["200", "300", "400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -26,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-full font-geist-sans antialiased flex flex-col bg-white dark:bg-black text-black dark:text-white`}
+        className={`${geistSans.variable} ${geistMono.variable} ${gemunuLibre.variable} min-h-full font-geist-sans antialiased flex flex-col bg-white dark:bg-black text-black dark:text-white`}
       >
         <div className="flex-1">
           <main>

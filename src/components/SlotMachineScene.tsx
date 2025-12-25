@@ -5,6 +5,8 @@ import { Html } from "@react-three/drei";
 import SlotCylinder from "./SlotCylinder";
 import Button from "./Button";
 import Confetti from "react-confetti";
+import { loadTexturesFromUrls } from "@/utils/textureLoader";
+import * as THREE from "three";
 
 interface SlotMachineSceneProps {
   isSpinning: boolean;
@@ -22,6 +24,30 @@ const SlotMachineScene: React.FC<SlotMachineSceneProps> = ({
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
   const [wasSpinning, setWasSpinning] = useState(false);
+  const [segmentTextures, setSegmentTextures] = useState<THREE.Texture[]>([]);
+  const [spinCount, setSpinCount] = useState(1);
+
+  // Load segment images
+  useEffect(() => {
+    const imageUrls = [
+      "/images/segment1.png",
+      "/images/segment2.png",
+      "/images/segment3.png",
+      "/images/segment4.png",
+      "/images/segment5.png",
+      "/images/segment6.png",
+      "/images/segment7.png",
+      "/images/segment8.png",
+    ];
+
+    loadTexturesFromUrls(imageUrls)
+      .then((textures) => {
+        setSegmentTextures(textures);
+      })
+      .catch((error) => {
+        console.error("Failed to load segment textures:", error);
+      });
+  }, []);
 
   // Track when spinning stops to show confetti
   useEffect(() => {
@@ -74,7 +100,7 @@ const SlotMachineScene: React.FC<SlotMachineSceneProps> = ({
           transmission={1}
           thickness={0.4}
           envMapIntensity={1}
-          clearcoat={1}
+          clearcoat={0.2}
           clearcoatRoughness={0}
           depthWrite={false}
         />
@@ -82,7 +108,8 @@ const SlotMachineScene: React.FC<SlotMachineSceneProps> = ({
 
       {/* 3 cylinders positioned side by side */}
       <SlotCylinder
-        position={[-1.5, -0.6, -2]}
+        position={[-1.5, -0.6, -1.85]}
+        textures={segmentTextures}
         isSpinning={isSpinning}
         stopSegment={stopSegments[0]}
         onStop={onCylinderStop}
@@ -92,6 +119,7 @@ const SlotMachineScene: React.FC<SlotMachineSceneProps> = ({
       />
       <SlotCylinder
         position={[-1.5, -0.6, 0]}
+        textures={segmentTextures}
         isSpinning={isSpinning}
         stopSegment={stopSegments[1]}
         onStop={onCylinderStop}
@@ -100,7 +128,8 @@ const SlotMachineScene: React.FC<SlotMachineSceneProps> = ({
         height={1.8}
       />
       <SlotCylinder
-        position={[-1.5, -0.6, 2]}
+        position={[-1.5, -0.6, 1.85]}
+        textures={segmentTextures}
         isSpinning={isSpinning}
         stopSegment={stopSegments[2]}
         onStop={onCylinderStop}
@@ -124,17 +153,23 @@ const SlotMachineScene: React.FC<SlotMachineSceneProps> = ({
             <Confetti
               width={windowSize.width || window.innerWidth}
               height={windowSize.height || window.innerHeight}
+              colors={["#FFB60A", "#C7C7C7", "#000000", "#FFFFFF"]}
             />
           )}
           {/* Spin button overlaid inside the canvas */}
-          <div className="w-full h-full flex items-end justify-center pb-16 text-black">
-            <Button
-              onClick={onSpin}
-              disabled={isSpinning}
-              className="pointer-events-auto text-black"
-            >
-              {isSpinning ? "Spinning..." : "Spin"}
-            </Button>
+          <div className="w-full h-full flex items-end justify-center pb-16">
+            <div className="flex flex-col items-center gap-2 pointer-events-auto">
+              <Button
+                onClick={onSpin}
+                disabled={isSpinning}
+                spinCount={spinCount}
+                onSpinCountChange={setSpinCount}
+                className="pointer-events-auto"
+              />
+              <p className="text-gray-400 text-sm font-sans">
+                Max Permission 10 USDC/day
+              </p>
+            </div>
           </div>
         </div>
       </Html>

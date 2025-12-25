@@ -43,3 +43,4 @@ const AnimatedFog: React.FC<AnimatedFogProps> = ({
 
 export default AnimatedFog;
 
+

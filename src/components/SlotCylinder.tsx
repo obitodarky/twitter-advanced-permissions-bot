@@ -97,6 +97,75 @@ const SlotCylinder: React.FC<SlotCylinderProps> = ({
       }
     }
   });
+  // Create texture atlas from textures array if provided
+  const textureAtlas = React.useMemo(() => {
+    if (textures && textures.length > 0) {
+      // Create a canvas to combine all textures into an atlas
+      const canvas = document.createElement("canvas");
+      // Use a reasonable default size, or try to get from first texture
+      let originalWidth = 256;
+      let originalHeight = 256;
+
+      // Try to get dimensions from first texture if available
+      const firstImage = textures[0].image;
+      if (
+        firstImage &&
+        (firstImage instanceof HTMLImageElement ||
+          firstImage instanceof HTMLCanvasElement)
+      ) {
+        originalWidth = firstImage.width || 256;
+        originalHeight = firstImage.height || 256;
+      }
+
+      // After rotating 90 degrees, width and height swap
+      const segmentWidth = originalHeight; // rotated width
+      const segmentHeight = originalWidth; // rotated height
+
+      canvas.width = segmentWidth * textures.length;
+      canvas.height = segmentHeight;
+      const ctx = canvas.getContext("2d");
+
+      if (!ctx) return null;
+
+      // Draw each texture to canvas, rotated 90 degrees clockwise
+      textures.forEach((texture, index) => {
+        const img = texture.image;
+        if (
+          img &&
+          (img instanceof HTMLImageElement ||
+            img instanceof HTMLCanvasElement ||
+            img instanceof ImageBitmap)
+        ) {
+          const x = index * segmentWidth;
+          const y = 0;
+
+          // Save context, rotate, draw, then restore
+          ctx.save();
+          // Translate to the center of where we want to draw
+          ctx.translate(x + segmentWidth / 2, segmentHeight / 2);
+          // Rotate 90 degrees clockwise (Math.PI / 2)
+          ctx.rotate(Math.PI / 2);
+          // Draw the image centered at origin (after translation and rotation)
+          ctx.drawImage(
+            img,
+            -originalWidth / 2,
+            -originalHeight / 2,
+            originalWidth,
+            originalHeight
+          );
+          ctx.restore();
+        }
+      });
+
+      const atlas = new THREE.CanvasTexture(canvas);
+      atlas.wrapS = THREE.ClampToEdgeWrapping;
+      atlas.wrapT = THREE.ClampToEdgeWrapping;
+      atlas.needsUpdate = true;
+      return atlas;
+    }
+    return null;
+  }, [textures]);
+
   // Create a canvas texture with colored segments as fallback
   const createSegmentTexture = React.useMemo(() => {
     const canvas = document.createElement("canvas");
@@ -106,16 +175,7 @@ const SlotCylinder: React.FC<SlotCylinderProps> = ({
 
     if (!ctx) return null;
 
-    const colors = [
-      "#171823",
-      "#171823",
-      "#171823",
-      "#171823",
-      "#171823",
-      "#171823",
-      "#171823",
-      "#171823",
-    ];
+    const colors = ["#111111 ", "#111111 ", "#111111 ", "#111111 "];
 
     const segmentWidth = canvas.width / segments;
 
@@ -144,17 +204,14 @@ const SlotCylinder: React.FC<SlotCylinderProps> = ({
   // Enhanced material for better light reflection
   const material = React.useMemo(() => {
     const baseMaterialProps = {
-      roughness: 0.3, // Lower roughness for more reflection
-      metalness: 0.2, // Slight metalness for better light interaction
+      roughness: 1.2, // Lower roughness for more reflection
+      metalness: 0.1, // Slight metalness for better light interaction
       envMapIntensity: 1.5, // Enhanced environment map for reflections
     };
 
-    if (textures && textures.length > 0) {
-      const texture = textures[0];
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.RepeatWrapping;
+    if (textureAtlas) {
       return new THREE.MeshStandardMaterial({
-        map: texture,
+        map: textureAtlas,
         ...baseMaterialProps,
       });
     } else if (createSegmentTexture) {
@@ -164,11 +221,11 @@ const SlotCylinder: React.FC<SlotCylinderProps> = ({
       });
     } else {
       return new THREE.MeshStandardMaterial({
-        color: "#171823",
+        color: "#0B0B11 ",
         ...baseMaterialProps,
       });
     }
-  }, [textures, createSegmentTexture]);
+  }, [textureAtlas, createSegmentTexture]);
 
   // Create geometry with enough radial segments to appear smooth,
   // while still using `segments` for the logical reel divisions.
@@ -182,6 +239,21 @@ const SlotCylinder: React.FC<SlotCylinderProps> = ({
     geo.computeVertexNormals();
     return geo;
   }, [segments, radius, height]);
+
+  // Update texture repeat when using atlas
+  React.useEffect(() => {
+    if (
+      textureAtlas &&
+      material instanceof THREE.MeshStandardMaterial &&
+      material.map
+    ) {
+      // Set repeat to 1 so the full atlas wraps around the cylinder
+      // The atlas contains all segments side by side, so one full rotation shows all segments
+      material.map.repeat.set(1, 1);
+      material.map.offset.set(0, 0);
+      material.needsUpdate = true;
+    }
+  }, [textureAtlas, segments, material]);
 
   return (
     <mesh

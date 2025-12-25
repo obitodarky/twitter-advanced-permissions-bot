@@ -27,6 +27,7 @@ const config: Config = {
       fontFamily: {
         'geist-sans': ['var(--font-geist-sans)'],
         'geist-mono': ['var(--font-geist-mono)'],
+        'gemunu-libre': ['var(--font-gemunu-libre)'],
         sans: ['var(--font-geist-sans)'],
         mono: ['var(--font-geist-mono)'],
       },

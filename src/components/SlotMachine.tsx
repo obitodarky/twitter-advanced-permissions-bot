@@ -6,8 +6,14 @@ import SlotMachineScene from "./SlotMachineScene";
 import { Lights } from "./Lights";
 import Hall from "./Hall";
 import { Preload } from "@react-three/drei";
-import VolumetricLight from "./VolumetricLight";
-import AnimatedFog from "./AnimatedFog";
+import CameraAnimation from "./CameraAnimation";
+import {
+  EffectComposer,
+  DepthOfField,
+  Bloom,
+  Noise,
+  Vignette,
+} from "@react-three/postprocessing";
 
 interface SlotMachineProps {
   className?: string;
@@ -61,60 +67,14 @@ const SlotMachine: React.FC<SlotMachineProps> = ({ className }) => {
           camera={{ position: [5, 0, 0], fov: 80 }}
           className="bg-zinc-50"
         >
+          <CameraAnimation
+            startPosition={[10, 0, 0]}
+            endPosition={[5, 0, 0]}
+            duration={2}
+          />
           <axesHelper args={[5]} />
-          <ambientLight intensity={2} />
+          <ambientLight intensity={0.5} />
           <Lights />
-          <AnimatedFog
-            color="#e0e0e0"
-            minDensity={0.02}
-            maxDensity={0.04}
-            speed={0.2}
-          />
-
-          {/* 
-            Volumetric lighting for god rays through the corridor
-            Adjust these parameters to fine-tune the effect:
-            
-            POSITION & TARGET:
-            - position: Light source location [x, y, z] - adjust y for height, z for depth
-            - target: Where rays point [x, y, z] - typically at cylinder position
-            
-            LIGHT PROPERTIES:
-            - intensity: Brightness (1-5 recommended)
-            - color: Light color (hex string)
-            - angle: Beam width in radians (0.2-0.8)
-            - penumbra: Edge softness (0.3-1.0)
-            
-            RAY PROPERTIES:
-            - rayLength: How far rays extend (8-20)
-            - rayWidth: Thickness of rays (0.2-0.8)
-            - rayCount: Number of visible rays (4-12)
-            - rayOpacity: Transparency (0.3-0.8)
-            - rayColor: Color of rays (hex string)
-            
-            ANIMATION:
-            - animate: Enable/disable animation
-            - animationSpeed: Speed multiplier (0.2-1.5)
-            
-            See VOLUMETRIC_LIGHTING_GUIDE.md for detailed instructions
-          */}
-          <VolumetricLight
-            position={[0, 8, -5]}
-            target={[0, -0.6, 0]}
-            intensity={3}
-            color="#ffffff"
-            distance={25}
-            decay={2}
-            angle={0.4}
-            penumbra={0.6}
-            rayLength={12}
-            rayWidth={0.4}
-            rayCount={6}
-            rayOpacity={0.5}
-            rayColor="#ffffff"
-            animate={true}
-            animationSpeed={0.5}
-          />
 
           <Hall position={[0, 0.98, 0]} scale={3} />
           <SlotMachineScene
@@ -123,6 +83,29 @@ const SlotMachine: React.FC<SlotMachineProps> = ({ className }) => {
             onCylinderStop={handleCylinderStop}
             onSpin={handleSpin}
           />
+          <EffectComposer>
+            <Vignette eskil={false} offset={0.1} darkness={1.1} />
+            <Bloom
+              luminanceThreshold={0}
+              luminanceSmoothing={3.5}
+              height={800}
+            />
+          </EffectComposer>
+          {/* <EffectComposer>
+            <DepthOfField
+              focusDistance={0}
+              focalLength={0.9}
+              bokehScale={2}
+              height={480}
+            />
+            <Bloom
+              luminanceThreshold={0}
+              luminanceSmoothing={0.9}
+              height={300}
+            />
+            <Noise opacity={0.02} />
+            <Vignette eskil={false} offset={0.1} darkness={1.1} />
+          </EffectComposer> */}
           <Preload all />
         </Canvas>
       </div>
