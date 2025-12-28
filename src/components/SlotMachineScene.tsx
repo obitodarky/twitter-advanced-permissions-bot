@@ -27,6 +27,7 @@ const SlotMachineScene: React.FC<SlotMachineSceneProps> = ({
   const [segmentTextures, setSegmentTextures] = useState<THREE.Texture[]>([]);
   const [spinCount, setSpinCount] = useState(1);
 
+
   // Load segment images
   useEffect(() => {
     const imageUrls = [
@@ -149,13 +150,13 @@ const SlotMachineScene: React.FC<SlotMachineSceneProps> = ({
               className="h-12 w-auto translate-y-4 glow-animation"
             />
           </div>
-          {showConfetti && (
+          {/* {showConfetti && (
             <Confetti
               width={windowSize.width || window.innerWidth}
               height={windowSize.height || window.innerHeight}
               colors={["#FFB60A", "#C7C7C7", "#000000", "#FFFFFF"]}
             />
-          )}
+          )} */}
           {/* Spin button overlaid inside the canvas */}
           <div className="w-full h-full flex items-end justify-center pb-16">
             <div className="flex flex-col items-center gap-2 pointer-events-auto">

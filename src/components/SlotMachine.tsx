@@ -14,6 +14,7 @@ import {
   Noise,
   Vignette,
 } from "@react-three/postprocessing";
+import { handleSpin } from "@/services/spinService";
 
 interface SlotMachineProps {
   className?: string;
@@ -26,27 +27,36 @@ const SlotMachine: React.FC<SlotMachineProps> = ({ className }) => {
     0, 0, 0,
   ]);
 
-  const handleSpin = useCallback(() => {
-    if (isSpinning) return;
+  // const handleSpin = useCallback(() => {
+  //   const connector = getMetaMaskConnector();
+  //   if(!connector){
+  //     connectAccount();
+  //     return;
+  //   } else {
+  //     console.log("MetaMask connector found");
+  //     return;
+  //   }
 
-    setIsSpinning(true);
-    setStoppedCylinders(0);
+  //   if (isSpinning) return;
 
-    // Generate random stop segments for each cylinder
-    // Similar to cherry-charm: random segments between min and max
-    // For 8 segments, use 8-24 (1-3 full rotations) to ensure multiple spins
-    const min = 8;
-    const max = 24;
-    const getRandomStopSegment = () =>
-      Math.floor(Math.random() * (max - min + 1)) + min;
+  //   setIsSpinning(true);
+  //   setStoppedCylinders(0);
 
-    const segments: [number, number, number] = [
-      getRandomStopSegment(),
-      getRandomStopSegment(),
-      getRandomStopSegment(),
-    ];
-    setStopSegments(segments);
-  }, [isSpinning]);
+  //   // Generate random stop segments for each cylinder
+  //   // Similar to cherry-charm: random segments between min and max
+  //   // For 8 segments, use 8-24 (1-3 full rotations) to ensure multiple spins
+  //   const min = 8;
+  //   const max = 24;
+  //   const getRandomStopSegment = () =>
+  //     Math.floor(Math.random() * (max - min + 1)) + min;
+
+  //   const segments: [number, number, number] = [
+  //     getRandomStopSegment(),
+  //     getRandomStopSegment(),
+  //     getRandomStopSegment(),
+  //   ];
+  //   setStopSegments(segments);
+  // }, [isSpinning]);
 
   const handleCylinderStop = useCallback(() => {
     setStoppedCylinders((prev) => {
