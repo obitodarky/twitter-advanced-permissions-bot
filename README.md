@@ -14,8 +14,8 @@ bundler and paymaster services to submit user operations and
 sponsor transactions. You can get your API key from [Pimlico’s dashboard](https://dashboard.pimlico.io/apikeys).
 
 
-2. **RPC URL** In this template, you’ll need an RPC URL for the Sepolia chain. You can use a public 
-RPC or any provider of your choice, but we recommend using a paid RPC for better reliability and to 
+2. **RPC URL** In this template, you'll need an RPC URL for the Monad testnet. You can use the public 
+RPC at `https://testnet-rpc.monad.xyz` or any provider of your choice, but we recommend using a paid RPC for better reliability and to 
 avoid rate-limiting issues.
 
 ## Project structure

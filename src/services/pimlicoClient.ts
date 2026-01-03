@@ -8,7 +8,7 @@ if (!pimlicoKey) {
 }
 
 /**
- * Pimlico client instance configured for Linea Sepolia network
+ * Pimlico client instance configured for Monad testnet
  * Used for estimating gas prices (maxFeePerGas, maxPriorityFeePerGas) for sending a UserOperation
  */
 export const pimlicoClientFactory = (chainId: number) => createPimlicoClient({

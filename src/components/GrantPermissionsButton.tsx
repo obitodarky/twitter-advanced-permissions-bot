@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { parseEther } from "viem";
+import { parseUnits } from "viem";
 import { erc7715ProviderActions } from "@metamask/smart-accounts-kit/actions";
 import { useSessionAccount } from "@/providers/SessionAccountProvider";
 import { usePermissions } from "@/providers/PermissionProvider";
 import { Loader2, CheckCircle } from "lucide-react";
 import Button from "@/components/Button";
 import { useChainId, useWalletClient } from "wagmi";
+import { MONAD_USDC_ADDRESS, USDC_DECIMALS } from "@/constants/tokens";
 
 export default function GrantPermissionsButton() {
   const { sessionAccount } = useSessionAccount();
@@ -19,15 +20,15 @@ export default function GrantPermissionsButton() {
   const [isAdjustmentAllowed, setIsAdjustmentAllowed] = useState<boolean>(true);
 
   /**
-   * Handles the permission granting process for native token periodic transfer.
+   * Handles the permission granting process for ERC20 USDC token periodic transfer.
    *
    * This function:
    * 1. Creates a Viem client with ERC-7715 provider actions
    * 2. Sets up permission parameters including:
-   *    - Chain ID (Sepolia testnet)
-   *    - Expiry time (24 hours from current time)
+   *    - Chain ID (Monad testnet)
+   *    - Expiry time (30 days from current time)
    *    - Signer details (delegate smart account)
-   *    - Native token periodic transfer permission configuration
+   *    - ERC20 token periodic transfer permission configuration for Monad USDC
    * 3. Grants the permissions through the MetaMask snap
    * 4. Stores the granted permissions using the PermissionProvider
    * 5. Updates the application step
@@ -52,30 +53,34 @@ export default function GrantPermissionsButton() {
       // 30 days in seconds
       const expiry = currentTime + 24 * 60 * 60 * 30;
 
-      const permissions = await client.requestExecutionPermissions([{
-        chainId,
-        expiry,
-        signer: {
-          type: "account",
-          data: {
-            address: sessionAccount.address,
+      const permissions = await client.requestExecutionPermissions([
+        {
+          chainId,
+          expiry,
+          signer: {
+            type: "account",
+            data: {
+              address: sessionAccount.address,
+            },
+          },
+          isAdjustmentAllowed,
+          permission: {
+            type: "erc20-token-periodic",
+            data: {
+              // USDC token address on Monad testnet
+              tokenAddress: MONAD_USDC_ADDRESS,
+              // 10 USDC (USDC has 6 decimals)
+              periodAmount: parseUnits("10", USDC_DECIMALS),
+              // 1 day in seconds
+              periodDuration: 86400,
+              justification: "Permission to transfer 10 USDC every day",
+            },
           },
         },
-        isAdjustmentAllowed,
-        permission: {
-          type: "native-token-periodic",
-          data: {
-            // 0.001 ETH in WEI format.
-            periodAmount: parseEther("0.001"),
-            // 1 day in seconds
-            periodDuration: 86400,
-            justification: "Permission to transfer 0.001 ETH every day",
-          },
-        },
-      }]);
+      ]);
       savePermission(permissions[0]);
     } catch (error) {
-      console.error('Error granting permissions:', error);
+      console.error("Error granting permissions:", error);
     } finally {
       setIsLoading(false);
     }
@@ -104,12 +109,8 @@ export default function GrantPermissionsButton() {
           {isLoading && "Granting Permissions..."}
           {!isLoading && "Grant Permissions"}
         </span>
-        {isLoading && (
-          <Loader2 className="h-5 w-5 animate-spin" />
-        )}
-        {!isLoading && (
-          <CheckCircle className="h-5 w-5" />
-        )}
+        {isLoading && <Loader2 className="h-5 w-5 animate-spin" />}
+        {!isLoading && <CheckCircle className="h-5 w-5" />}
       </Button>
     </div>
   );

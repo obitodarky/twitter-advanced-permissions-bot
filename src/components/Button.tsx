@@ -11,6 +11,9 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children?: ReactNode;
   spinCount?: number;
   onSpinCountChange?: (count: number) => void;
+  customText?: string;
+  showIcon?: boolean;
+  icon?: ReactNode;
 }
 
 export default function Button({
@@ -19,6 +22,9 @@ export default function Button({
   spinCount = 1,
   onSpinCountChange,
   onClick,
+  customText,
+  showIcon = true,
+  icon,
   ...props
 }: ButtonProps) {
   const [isPressed, setIsPressed] = useState(false);
@@ -248,15 +254,17 @@ export default function Button({
       {/* Button Content */}
       <div className="absolute inset-0 flex items-center justify-center gap-2">
         <span className="text-[#2a2a2a] text-2xl font-bold tracking-tight font-gemunu-libre">
-          SPIN {spinCount}
+          {customText || `SPIN ${spinCount}`}
         </span>
-        {/* Dollar Icon */}
-        <img
-          src="/usdc.svg"
-          alt="USDC"
-          className="w-5 h-5 flex-shrink-0"
-          draggable={false}
-        />
+        {showIcon &&
+          (icon || (
+            <img
+              src="/usdc.svg"
+              alt="USDC"
+              className="w-5 h-5 flex-shrink-0"
+              draggable={false}
+            />
+          ))}
       </div>
 
       {children}
